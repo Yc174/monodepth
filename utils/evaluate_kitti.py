@@ -1,5 +1,5 @@
 import numpy as np
-import cv, cv2
+import cv2
 import argparse
 from evaluation_utils import *
 
@@ -27,6 +27,7 @@ if __name__ == '__main__':
     elif args.split == 'eigen':
         num_samples = 697
         test_files = read_text_lines(args.gt_path + 'eigen_test_files.txt')
+        # test_files = read_text_lines('filenames/' + 'eigen_test_files.txt')
         gt_files, gt_calib, im_sizes, im_files, cams = read_file_data(test_files, args.gt_path)
 
         num_test = len(im_files)

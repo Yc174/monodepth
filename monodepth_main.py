@@ -19,6 +19,8 @@ import re
 import time
 import tensorflow as tf
 import tensorflow.contrib.slim as slim
+import matplotlib.pyplot as plt
+import scipy.misc
 
 from monodepth_model import *
 from monodepth_dataloader import *
@@ -50,6 +52,7 @@ parser.add_argument('--log_directory',             type=str,   help='directory t
 parser.add_argument('--checkpoint_path',           type=str,   help='path to a specific checkpoint to load', default='')
 parser.add_argument('--retrain',                               help='if used with checkpoint_path, will restart training from step zero', action='store_true')
 parser.add_argument('--full_summary',                          help='if set, will keep more data for each summary. Warning: the file can become very large', action='store_true')
+parser.add_argument('--save_depth_map',                        help='if set, will save every depth map in test set', action='store_true')
 
 args = parser.parse_args()
 
@@ -210,10 +213,17 @@ def test(params):
     disparities    = np.zeros((num_test_samples, params.height, params.width), dtype=np.float32)
     disparities_pp = np.zeros((num_test_samples, params.height, params.width), dtype=np.float32)
     for step in range(num_test_samples):
-        disp = sess.run(model.disp_left_est[0])
+        disp, image_path = sess.run([model.disp_left_est[0], dataloader.left_image_path])
         disparities[step] = disp[0].squeeze()
         disparities_pp[step] = post_process_disparity(disp.squeeze())
 
+        if args.save_depth_map:
+            depth_map_path = os.path.join(args.data_path, 'pred')
+            print('saved depth map in %s, %s_disp'%(depth_map_path, image_path[-10:-4]))
+            np.save(os.path.join(depth_map_path, "%s_disp.npy"%image_path[-10:-4]),
+                    disparities_pp[step])
+            disp_to_img = scipy.misc.imresize(disparities_pp[step].squeeze(), [375, 1242])
+            plt.imsave(os.path.join(depth_map_path, "%s_disp.png"%image_path[-10:-4]), disp_to_img, cmap='plasma')
     print('done.')
 
     print('writing disparities.')

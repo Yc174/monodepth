@@ -60,6 +60,8 @@ def test_simple(params):
 
     # SESSION
     config = tf.ConfigProto(allow_soft_placement=True)
+    # config = tf.ConfigProto()
+    # config.gpu_options.per_process_gpu_memory_fraction = 0.4
     sess = tf.Session(config=config)
 
     # SAVER
